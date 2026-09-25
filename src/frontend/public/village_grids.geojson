@@ -1,0 +1,175 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "V-101",
+      "properties": {
+        "id": "V-101",
+        "district": "Hooghly",
+        "name": "Khanakul-I",
+        "block": "Khanakul",
+        "threatLevel": "CRITICAL",
+        "floodDepthCm": 145,
+        "cropLossPercent": 82,
+        "farmersCount": 1240,
+        "cropType": "Aman Paddy",
+        "sarDecibels": "-5.4 dB",
+        "centroid": [87.86, 22.76],
+        "pradhanContact": "+91 98301 44521",
+        "river": "Mundeswari River",
+        "baseline_cropland_acres": 2500,
+        "flooded_acres": 12.5,
+        "smsBengali": "জরুরী বন্যা সতর্কতা (EMERGENCY ALERT): খানাকুল-১ ব্লকে মুণ্ডেশ্বরী নদীর জলস্তরের ব্যাপক বৃদ্ধির কারণে পরবর্তী ১২ ঘণ্টার মধ্যে প্লাবনের আশঙ্কা রয়েছে। অবিলম্বে উঁচুতে আশ্রয় নিন এবং আমন ধান ও পশুসম্পদ রক্ষা করুন। জরুরী হেল্পলাইন: ১০৭০।"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [87.82, 22.72],
+            [87.90, 22.72],
+            [87.91, 22.80],
+            [87.83, 22.80],
+            [87.82, 22.72]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "V-103",
+      "properties": {
+        "id": "V-103",
+        "district": "Hooghly",
+        "name": "Pursurah North",
+        "block": "Pursurah",
+        "threatLevel": "CRITICAL",
+        "floodDepthCm": 160,
+        "cropLossPercent": 91,
+        "farmersCount": 1550,
+        "cropType": "Vegetables & Rice",
+        "sarDecibels": "-6.1 dB",
+        "centroid": [87.95, 22.84],
+        "pradhanContact": "+91 98305 11094",
+        "river": "Damodar River",
+        "baseline_cropland_acres": 3100,
+        "flooded_acres": 18.2,
+        "smsBengali": "জরুরী বন্যা সতর্কতা (EMERGENCY ALERT): হুগলী নদী অববাহিকায় Pursurah North গ্রামে বাঁধ ভাঙার কারণে পরবর্তী ২৪ ঘণ্টার মধ্যে ব্যাপক প্লাবনের আশঙ্কা রয়েছে। অবিলম্বে নীচু এলাকার Vegetable & Rice ফসল কেটে নিন এবং গবাদি পশু উঁচুতে নিয়ে যান। জরুরী সহায়তার জন্য কল করুন ১০৭০।"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [87.90, 22.80],
+            [88.00, 22.80],
+            [88.01, 22.88],
+            [87.91, 22.88],
+            [87.90, 22.80]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "V-102",
+      "properties": {
+        "id": "V-102",
+        "district": "Hooghly",
+        "name": "Arambagh Rural",
+        "block": "Arambagh",
+        "threatLevel": "HIGH",
+        "floodDepthCm": 98,
+        "cropLossPercent": 65,
+        "farmersCount": 980,
+        "cropType": "Jute & Rice",
+        "sarDecibels": "-3.8 dB",
+        "centroid": [87.78, 22.88],
+        "pradhanContact": "+91 98302 77129",
+        "river": "Darakeswar River",
+        "baseline_cropland_acres": 2200,
+        "flooded_acres": 8.4,
+        "smsBengali": "জরুরী সতর্কতা: আরামবাগ গ্রামীণ এলাকায় দারকেশ্বর নদীর প্লাবনে পাট ও ধান ক্ষেত প্লাবিত হতে পারে। কৃষকদের সতর্ক থাকতে অনুরোধ করা হচ্ছে। সহায়তার জন্য যোগাযোগ করুন: ১০৭০।"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [87.72, 22.82],
+            [87.84, 22.82],
+            [87.85, 22.92],
+            [87.73, 22.92],
+            [87.72, 22.82]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "V-104",
+      "properties": {
+        "id": "V-104",
+        "district": "Paschim Medinipur",
+        "name": "Ghatal Border",
+        "block": "Ghatal",
+        "threatLevel": "MEDIUM",
+        "floodDepthCm": 52,
+        "cropLossPercent": 40,
+        "farmersCount": 610,
+        "cropType": "Sesame & Paddy",
+        "sarDecibels": "-2.1 dB",
+        "centroid": [87.72, 22.66],
+        "pradhanContact": "+91 98304 88310",
+        "river": "Rupnarayan River",
+        "baseline_cropland_acres": 1800,
+        "flooded_acres": 3.1,
+        "smsBengali": "সতর্কতা বার্তা: ঘাটাল সীমান্ত ব্লকে মাঝারি প্লাবনের সম্ভাবনা। তিল ও ধান চাষীরা প্রয়োজনীয় ব্যবস্থা গ্রহণ করুন। কন্ট্রোল রুম: ১০৭০।"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [87.65, 22.60],
+            [87.76, 22.60],
+            [87.77, 22.70],
+            [87.66, 22.70],
+            [87.65, 22.60]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "V-105",
+      "properties": {
+        "id": "V-105",
+        "district": "Hooghly",
+        "name": "Singur Lowlands",
+        "block": "Singur",
+        "threatLevel": "LOW",
+        "floodDepthCm": 32,
+        "cropLossPercent": 15,
+        "farmersCount": 430,
+        "cropType": "Potato & Rice",
+        "sarDecibels": "-1.2 dB",
+        "centroid": [88.23, 22.81],
+        "pradhanContact": "+91 98309 33201",
+        "river": "Ganga / Hooghly",
+        "baseline_cropland_acres": 1500,
+        "flooded_acres": 0.0,
+        "smsBengali": "তথ্য: সিঙ্গুর নিচু এলাকায় জল জমার সম্ভাবনা। আলু ও ধান ক্ষেতে জমা জল নিষ্কাশনের ব্যবস্থা রাখুন। হেল্পলাইন: ১০৭০।"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [88.18, 22.76],
+            [88.28, 22.76],
+            [88.29, 22.86],
+            [88.19, 22.86],
+            [88.18, 22.76]
+          ]
+        ]
+      }
+    }
+  ]
+}

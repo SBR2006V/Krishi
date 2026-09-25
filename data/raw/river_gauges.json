@@ -1,0 +1,42 @@
+[
+  {
+    "station_id": "CWC-HOO-01",
+    "station_name": "Champadanga",
+    "river": "Damodar River",
+    "district": "Hooghly",
+    "current_water_level_m": 14.8,
+    "danger_level_m": 14.0,
+    "discharge_cusecs": 45200,
+    "last_updated": "2026-09-25T20:00:00Z"
+  },
+  {
+    "station_id": "CWC-HOO-02",
+    "station_name": "Arambagh Gauge",
+    "river": "Darakeswar River",
+    "district": "Hooghly",
+    "current_water_level_m": 13.2,
+    "danger_level_m": 13.5,
+    "discharge_cusecs": 28400,
+    "last_updated": "2026-09-25T20:00:00Z"
+  },
+  {
+    "station_id": "CWC-HOO-03",
+    "station_name": "Bandar Khanakul",
+    "river": "Mundeswari River",
+    "district": "Hooghly",
+    "current_water_level_m": 12.6,
+    "danger_level_m": 12.0,
+    "discharge_cusecs": 51000,
+    "last_updated": "2026-09-25T20:00:00Z"
+  },
+  {
+    "station_id": "CWC-MED-04",
+    "station_name": "Ghatal Lock Gate",
+    "river": "Rupnarayan River",
+    "district": "Paschim Medinipur",
+    "current_water_level_m": 8.9,
+    "danger_level_m": 9.5,
+    "discharge_cusecs": 19200,
+    "last_updated": "2026-09-25T20:00:00Z"
+  }
+]
