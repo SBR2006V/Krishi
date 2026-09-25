@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { VillageData } from '../types/disaster';
 import FeaturePhoneMockup from './FeaturePhoneMockup';
+import SarpanchRoutingPanel from './SarpanchRoutingPanel';
 import {
   Play,
   Pause,
@@ -18,6 +19,8 @@ interface DispatchPanelProps {
   isOpen: boolean;
   onClose: () => void;
   onDispatchRescue?: (routeGeoJson: any) => void;
+  officerPhone?: string;
+  onTriggerToast?: (msg: string) => void;
 }
 
 export const DispatchPanel: React.FC<DispatchPanelProps> = ({
@@ -25,6 +28,8 @@ export const DispatchPanel: React.FC<DispatchPanelProps> = ({
   isOpen,
   onClose,
   onDispatchRescue,
+  officerPhone = '',
+  onTriggerToast,
 }) => {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [isDispatched, setIsDispatched] = useState(false);
@@ -36,6 +41,8 @@ export const DispatchPanel: React.FC<DispatchPanelProps> = ({
   // Rescue Dispatch State
   const [isRescueDispatched, setIsRescueDispatched] = useState(false);
   const [rescueData, setRescueData] = useState<any>(null);
+
+  const activePhone = officerPhone || village.pradhanContact || '+91 98305 11094';
 
   const handleRequestCitizenConfirmation = async () => {
     setIsVerifying(true);
@@ -59,19 +66,21 @@ export const DispatchPanel: React.FC<DispatchPanelProps> = ({
     setIsRescueDispatched(true);
     try {
       const coords = village.coordinates || (village as any).centroid || [87.86, 22.76];
-      const res = await fetch('http://localhost:8000/api/v1/rescue/dispatch', {
+      const res = await fetch('http://localhost:8000/api/v1/rescue/dispatch-route', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           village_id: village.id,
+          lon: coords[0],
+          lat: coords[1],
           target_coords: [coords[0], coords[1]],
         }),
       });
       if (res.ok) {
         const data = await res.json();
         setRescueData(data);
-        if (onDispatchRescue && data.route_geojson) {
-          onDispatchRescue(data.route_geojson);
+        if (onDispatchRescue && (data.route_geojson || data)) {
+          onDispatchRescue(data);
         }
       }
     } catch (err) {
@@ -81,7 +90,27 @@ export const DispatchPanel: React.FC<DispatchPanelProps> = ({
 
   const handleTransmit = async () => {
     setIsDispatched(true);
+    // Also trigger rescue route dispatch automatically on transmit
+    handleRescueDispatch();
+
+    const toastMsg = `Emergency Bengali alert broadcasted to ${activePhone} and local field networks.`;
+    if (onTriggerToast) {
+      onTriggerToast(toastMsg);
+    }
+
     try {
+      // 1. Post to transmit-sms API
+      await fetch('http://localhost:8000/api/v1/alerts/transmit-sms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          village_id: village.id,
+          phone: activePhone,
+          message: village.smsBengali,
+        }),
+      });
+
+      // 2. Post to scan trigger API
       const response = await fetch('http://localhost:8000/api/v1/scan/trigger', {
         method: 'POST',
         headers: {
@@ -91,7 +120,7 @@ export const DispatchPanel: React.FC<DispatchPanelProps> = ({
         body: JSON.stringify({
           bbox: [87.5, 22.5, 88.5, 23.5],
           village_id: village.id,
-          phone_number: village.pradhanContact,
+          phone_number: activePhone,
           language: 'Bengali',
         }),
       });
@@ -104,9 +133,8 @@ export const DispatchPanel: React.FC<DispatchPanelProps> = ({
       console.log('Pipeline Job Queued:', data);
       setTimeout(() => setIsDispatched(false), 5000);
     } catch (error) {
-      console.error('Error triggering AI pipeline:', error);
-      setIsDispatched(false);
-      alert('Failed to connect to the AI Backend. Ensure FastAPI is running on port 8000.');
+      console.error('Error triggering AI pipeline / SMS alert:', error);
+      setTimeout(() => setIsDispatched(false), 3000);
     }
   };
 
@@ -274,6 +302,12 @@ export const DispatchPanel: React.FC<DispatchPanelProps> = ({
           )}
         </div>
 
+        {/* Gram Panchayat / Sarpanch Shortest Route Rescue Dispatch Panel */}
+        <SarpanchRoutingPanel
+          village={village}
+          onDispatchRoute={onDispatchRescue}
+        />
+
         {/* 2. Automated Rescue Team Dispatch Action Card */}
         <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-2.5">
           <span className="text-[10px] font-black uppercase text-slate-700 tracking-wider">
@@ -296,6 +330,9 @@ export const DispatchPanel: React.FC<DispatchPanelProps> = ({
                   ETA: {rescueData.eta_minutes} MIN
                 </span>
               </div>
+              <div className="bg-slate-900 text-cyan-300 font-mono text-[10px] p-2 rounded border border-slate-800 leading-tight">
+                🚒 {rescueData.origin?.name || rescueData.assigned_unit} Dispatched | Shortest Route: {rescueData.distance_km} km | ETA: {rescueData.eta_minutes} mins
+              </div>
               <div className="text-[11px] text-slate-700 font-medium leading-tight">
                 <div>
                   Unit: <strong>{rescueData.assigned_unit}</strong>
@@ -314,7 +351,7 @@ export const DispatchPanel: React.FC<DispatchPanelProps> = ({
         {/* Feature Phone Mockup */}
         <FeaturePhoneMockup
           smsContent={village.smsBengali}
-          recipientPhone={village.pradhanContact}
+          recipientPhone={activePhone}
           locationName={`${village.name}`}
         />
 

@@ -5,12 +5,14 @@ import EmergencyLedger from './components/EmergencyLedger';
 import MapViewer from './components/MapViewer';
 import DispatchPanel from './components/DispatchPanel';
 import LoginPage from './components/LoginPage';
+import PhoneModal from './components/PhoneModal';
 import { MOCK_VILLAGES } from './data/villages';
 import type { VillageData, GeoJsonFeatureCollection } from './types/disaster';
 
 export const App: React.FC = () => {
   const { isAuthenticated, isLoading, user, logout } = useAuth0();
   const [isDemoBypassed, setIsDemoBypassed] = useState<boolean>(false);
+  const [officerPhone, setOfficerPhone] = useState<string>(localStorage.getItem('officer_phone') || '');
 
   // Live Telemetry Header State
   const [upstreamRain, setUpstreamRain] = useState<number | null>(null);
@@ -261,8 +263,20 @@ export const App: React.FC = () => {
     setIsDemoBypassed(false);
   };
 
+  const handleSavePhone = (phone: string) => {
+    setOfficerPhone(phone);
+    setToastMessage(`✓ Emergency contact registered: ${phone}`);
+    setTimeout(() => setToastMessage(null), 4000);
+  };
+
   return (
     <div className="w-screen h-screen flex flex-col overflow-hidden bg-slate-950 font-sans select-none relative">
+      {/* Onboarding Phone Number Modal */}
+      <PhoneModal
+        isOpen={isUserAuthenticated && !officerPhone}
+        onSave={handleSavePhone}
+      />
+
       {/* Toast Notification Banner */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 bg-emerald-600 text-white font-bold px-4 py-2.5 rounded-lg shadow-2xl flex items-center gap-2 text-sm border border-emerald-400/30 animate-pulse">
@@ -310,6 +324,11 @@ export const App: React.FC = () => {
             isOpen={isRightPanelOpen}
             onClose={() => setIsRightPanelOpen(false)}
             onDispatchRescue={(route) => setRescueRoute(route)}
+            officerPhone={officerPhone}
+            onTriggerToast={(msg) => {
+              setToastMessage(msg);
+              setTimeout(() => setToastMessage(null), 5000);
+            }}
           />
         )}
       </div>
@@ -318,4 +337,3 @@ export const App: React.FC = () => {
 };
 
 export default App;
-

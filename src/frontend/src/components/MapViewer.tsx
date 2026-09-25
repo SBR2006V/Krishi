@@ -162,36 +162,82 @@ export const MapViewer: React.FC<MapViewerProps> = ({
     }
   }, [geoJsonData, villages, onSelectVillage]);
 
+  const baseMarkerRef = useRef<maplibregl.Marker | null>(null);
+
   // Render Rescue Shortest Safe Route LineString
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !rescueRoute) return;
 
     const addRescueRouteLayer = () => {
-      if (map.getSource('rescue-route-src')) {
-        (map.getSource('rescue-route-src') as maplibregl.GeoJSONSource).setData(rescueRoute);
+      // Normalize feature geometry coordinates
+      const feature = rescueRoute.type === 'Feature' ? rescueRoute : rescueRoute.route_geojson || rescueRoute;
+      const coords = feature?.geometry?.coordinates;
+
+      if (map.getSource('rescue-route-line-source')) {
+        (map.getSource('rescue-route-line-source') as maplibregl.GeoJSONSource).setData(feature);
+      } else if (map.getSource('rescue-route-source')) {
+        (map.getSource('rescue-route-source') as maplibregl.GeoJSONSource).setData(feature);
       } else {
-        map.addSource('rescue-route-src', {
+        map.addSource('rescue-route-line-source', {
           type: 'geojson',
-          data: rescueRoute,
+          data: feature,
         });
       }
 
-      if (!map.getLayer('rescue-route-line')) {
+      const sourceId = map.getSource('rescue-route-line-source')
+        ? 'rescue-route-line-source'
+        : 'rescue-route-source';
+
+      if (!map.getLayer('rescue-route-line-layer')) {
         map.addLayer({
-          id: 'rescue-route-line',
+          id: 'rescue-route-line-layer',
           type: 'line',
-          source: 'rescue-route-src',
+          source: sourceId,
           layout: {
             'line-join': 'round',
             'line-cap': 'round',
           },
           paint: {
             'line-color': '#06b6d4', // Cyan route stroke
-            'line-width': 5,
+            'line-width': 4,
             'line-dasharray': [2, 1],
           },
         });
+      }
+
+      // Render origin staging base marker with vehicle icon 🚒
+      if (coords && Array.isArray(coords) && coords.length > 0) {
+        const originCoord = coords[0];
+
+        if (baseMarkerRef.current) {
+          baseMarkerRef.current.remove();
+        }
+
+        const el = document.createElement('div');
+        el.className = 'cursor-pointer flex items-center gap-1.5 bg-slate-950 text-white border-2 border-cyan-400 px-2 py-1 rounded-full text-xs font-black shadow-2xl z-30 animate-bounce';
+        const baseName = rescueRoute.origin?.name || rescueRoute.properties?.origin || 'Emergency Outpost Depot';
+        el.innerHTML = `<span>🚒</span><span class="text-[10px] text-cyan-300 uppercase">${baseName}</span>`;
+
+        baseMarkerRef.current = new maplibregl.Marker({ element: el })
+          .setLngLat([originCoord[0], originCoord[1]])
+          .addTo(map);
+
+        // Fit map bounds to encompass both origin depot and destination village
+        const lons = coords.map((c: any) => c[0]);
+        const lats = coords.map((c: any) => c[1]);
+        const minLon = Math.min(...lons);
+        const maxLon = Math.max(...lons);
+        const minLat = Math.min(...lats);
+        const maxLat = Math.max(...lats);
+
+        map.fitBounds(
+          [
+            [minLon, minLat],
+            [maxLon, maxLat],
+          ],
+          { padding: 80, duration: 1500 }
+        );
       }
     };
 
