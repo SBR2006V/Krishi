@@ -21,33 +21,62 @@ interface DispatchPanelProps {
 export const DispatchPanel: React.FC<DispatchPanelProps> = ({
   village,
   isOpen,
+  onClose
 }) => {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [isDispatched, setIsDispatched] = useState(false);
 
-  const handleTransmit = () => {
+  const handleTransmit = async () => {
     setIsDispatched(true);
-    setTimeout(() => {
+
+    try {
+      // Trigger the real FastAPI backend pipeline
+      const response = await fetch('http://localhost:8000/api/v1/scan/trigger', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer dev-token'
+        },
+        body: JSON.stringify({
+          bbox: [87.5, 22.5, 88.5, 23.5], // Hooghly Basin coordinates
+          village_id: village.id,
+          phone_number: village.pradhanContact,
+          language: "Bengali"
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Backend pipeline failed to trigger');
+      }
+
+      const data = await response.json();
+      console.log("Pipeline Job Queued:", data);
+
+      // Reset dispatch state after 5 seconds to show success
+      setTimeout(() => setIsDispatched(false), 5000);
+
+    } catch (error) {
+      console.error("Error triggering AI pipeline:", error);
       setIsDispatched(false);
-    }, 4000);
+      alert("Failed to connect to the AI Backend. Ensure FastAPI is running on port 8000.");
+    }
   };
 
   const floodedAcres =
     village.flooded_acres !== undefined
       ? village.flooded_acres
       : village.threatLevel === 'CRITICAL'
-      ? 18.2
-      : village.threatLevel === 'HIGH'
-      ? 8.4
-      : village.threatLevel === 'MEDIUM'
-      ? 3.1
-      : 0.0;
+        ? 18.2
+        : village.threatLevel === 'HIGH'
+          ? 8.4
+          : village.threatLevel === 'MEDIUM'
+            ? 3.1
+            : 0.0;
 
   return (
     <aside
-      className={`w-[360px] h-full bg-[#f8fafc] flex flex-col border-l border-slate-300 z-10 shadow-2xl font-sans select-none shrink-0 transition-transform duration-300 ${
-        isOpen ? 'translate-x-0' : 'translate-x-full absolute right-0'
-      }`}
+      className={`w-[360px] h-full bg-[#f8fafc] flex flex-col border-l border-slate-300 z-10 shadow-2xl font-sans select-none shrink-0 transition-transform duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full absolute right-0'
+        }`}
     >
       {/* Blue Header Banner */}
       <div className="bg-[#0b1626] text-white p-3.5 border-b border-slate-800">
@@ -77,13 +106,12 @@ export const DispatchPanel: React.FC<DispatchPanelProps> = ({
               TARGET LOCATION:
             </span>
             <span
-              className={`text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider ${
-                village.threatLevel === 'CRITICAL'
+              className={`text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider ${village.threatLevel === 'CRITICAL'
                   ? 'bg-red-600 text-white'
                   : village.threatLevel === 'HIGH'
-                  ? 'bg-amber-500 text-white'
-                  : 'bg-emerald-600 text-white'
-              }`}
+                    ? 'bg-amber-500 text-white'
+                    : 'bg-emerald-600 text-white'
+                }`}
             >
               {village.threatLevel} THREAT
             </span>
@@ -172,9 +200,8 @@ export const DispatchPanel: React.FC<DispatchPanelProps> = ({
               </div>
               <div className="w-full bg-sky-200 h-1.5 rounded-full overflow-hidden">
                 <div
-                  className={`bg-sky-700 h-full transition-all duration-300 ${
-                    isPlayingAudio ? 'w-2/5 animate-pulse' : 'w-0'
-                  }`}
+                  className={`bg-sky-700 h-full transition-all duration-300 ${isPlayingAudio ? 'w-2/5 animate-pulse' : 'w-0'
+                    }`}
                 />
               </div>
             </div>
