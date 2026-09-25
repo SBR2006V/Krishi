@@ -20,7 +20,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
 
-  // Initialize MapLibre Map
+  // Initialize MapLibre Map (Runs ONCE on mount)
   useEffect(() => {
     if (!mapContainer.current || mapRef.current) return;
 
@@ -47,7 +47,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
           },
         ],
       },
-      center: selectedVillage.coordinates,
+      center: [87.86, 22.76],
       zoom: 10.5,
     });
 
@@ -60,14 +60,20 @@ export const MapViewer: React.FC<MapViewerProps> = ({
     };
   }, []);
 
-  // Update center with smooth flyTo animation on selected village change
+  // Update center with safe flyTo animation on selected village change
   useEffect(() => {
-    if (mapRef.current) {
+    if (!mapRef.current || !selectedVillage) return;
+
+    const coords = selectedVillage.coordinates || (selectedVillage as any).centroid;
+    if (!coords || !Array.isArray(coords) || coords.length < 2) return;
+
+    const [lng, lat] = coords;
+    if (typeof lng === 'number' && typeof lat === 'number' && !isNaN(lng) && !isNaN(lat)) {
       mapRef.current.flyTo({
-        center: selectedVillage.coordinates,
+        center: [lng, lat],
         zoom: 12,
+        speed: 1.2,
         essential: true,
-        duration: 1400,
       });
     }
   }, [selectedVillage]);

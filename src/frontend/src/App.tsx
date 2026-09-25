@@ -21,6 +21,33 @@ export const App: React.FC = () => {
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState<boolean>(true);
   const [isRightPanelOpen, setIsRightPanelOpen] = useState<boolean>(true);
 
+  // Guarded village selection handler
+  const handleSelectVillage = (village: any) => {
+    if (!village) return;
+
+    // Safely extract coordinates or fallback to centroid / default
+    const rawCoords = village.coordinates || village.centroid;
+    let coords: [number, number] = [87.86, 22.76];
+
+    if (
+      Array.isArray(rawCoords) &&
+      rawCoords.length >= 2 &&
+      typeof rawCoords[0] === 'number' &&
+      typeof rawCoords[1] === 'number' &&
+      !isNaN(rawCoords[0]) &&
+      !isNaN(rawCoords[1])
+    ) {
+      coords = [rawCoords[0], rawCoords[1]];
+    }
+
+    const safeVillage: VillageData = {
+      ...village,
+      coordinates: coords,
+    };
+
+    setSelectedVillage(safeVillage);
+  };
+
   // Fetch Live Environmental Telemetry (Open-Meteo & CWC Gauges)
   useEffect(() => {
     const fetchTelemetry = async () => {
@@ -35,9 +62,9 @@ export const App: React.FC = () => {
           const fallbackRes = await fetch('/river_gauges.json');
           if (fallbackRes.ok) {
             const gauges = await fallbackRes.json();
-            const criticals = gauges.filter(
-              (g: any) => g.current_water_level_m >= g.danger_level_m
-            );
+            const criticals = Array.isArray(gauges)
+              ? gauges.filter((g: any) => g.current_water_level_m >= g.danger_level_m)
+              : [];
             setTelemetry({
               upstream_rain_24h_mm: 78.4,
               upstream_rain_48h_mm: 124.2,
@@ -65,7 +92,26 @@ export const App: React.FC = () => {
 
         // Update village list from GeoJSON feature properties if available
         if (data.features && data.features.length > 0) {
-          const extractedVillages = data.features.map((f) => f.properties);
+          const extractedVillages: VillageData[] = data.features.map((f) => {
+            const props = f.properties;
+            let coords: [number, number] | undefined = props.coordinates;
+            if (!coords && props.centroid && Array.isArray(props.centroid) && props.centroid.length >= 2) {
+              coords = [props.centroid[0], props.centroid[1]];
+            }
+            if (!coords && f.geometry?.type === 'Polygon' && f.geometry.coordinates?.[0]?.[0]) {
+              const pt = f.geometry.coordinates[0][0];
+              if (Array.isArray(pt) && pt.length >= 2) {
+                coords = [pt[0], pt[1]];
+              }
+            }
+            if (!coords) {
+              coords = [87.86, 22.76];
+            }
+            return {
+              ...props,
+              coordinates: coords,
+            };
+          });
           setVillages(extractedVillages);
         }
       } catch (err) {
@@ -76,7 +122,26 @@ export const App: React.FC = () => {
             const data: GeoJsonFeatureCollection = await fallbackRes.json();
             setGeoJsonData(data);
             if (data.features && data.features.length > 0) {
-              const extracted = data.features.map((f) => f.properties);
+              const extracted: VillageData[] = data.features.map((f) => {
+                const props = f.properties;
+                let coords: [number, number] | undefined = props.coordinates;
+                if (!coords && props.centroid && Array.isArray(props.centroid) && props.centroid.length >= 2) {
+                  coords = [props.centroid[0], props.centroid[1]];
+                }
+                if (!coords && f.geometry?.type === 'Polygon' && f.geometry.coordinates?.[0]?.[0]) {
+                  const pt = f.geometry.coordinates[0][0];
+                  if (Array.isArray(pt) && pt.length >= 2) {
+                    coords = [pt[0], pt[1]];
+                  }
+                }
+                if (!coords) {
+                  coords = [87.86, 22.76];
+                }
+                return {
+                  ...props,
+                  coordinates: coords,
+                };
+              });
               setVillages(extracted);
             }
           }
@@ -94,7 +159,7 @@ export const App: React.FC = () => {
       {/* Top Header Navbar with Live Telemetry */}
       <TopNavbar
         upstreamRainMm={telemetry.upstream_rain_24h_mm}
-        criticalGaugeCount={telemetry.critical_gauges.length}
+        criticalGaugeCount={telemetry.critical_gauges ? telemetry.critical_gauges.length : 0}
         catchmentStatus={telemetry.catchment_status}
         onToggleLeftPanel={() => setIsLeftPanelOpen((prev) => !prev)}
         onToggleRightPanel={() => setIsRightPanelOpen((prev) => !prev)}
@@ -106,8 +171,8 @@ export const App: React.FC = () => {
         {isLeftPanelOpen && (
           <EmergencyLedger
             villages={villages}
-            selectedVillageId={selectedVillage.id}
-            onSelectVillage={(v) => setSelectedVillage(v)}
+            selectedVillageId={selectedVillage?.id || ''}
+            onSelectVillage={handleSelectVillage}
           />
         )}
 
@@ -116,11 +181,11 @@ export const App: React.FC = () => {
           geoJsonData={geoJsonData}
           villages={villages}
           selectedVillage={selectedVillage}
-          onSelectVillage={(v) => setSelectedVillage(v)}
+          onSelectVillage={handleSelectVillage}
         />
 
         {/* Right Dispatch Confirmation Panel */}
-        {isRightPanelOpen && (
+        {isRightPanelOpen && selectedVillage && (
           <DispatchPanel
             village={selectedVillage}
             isOpen={isRightPanelOpen}

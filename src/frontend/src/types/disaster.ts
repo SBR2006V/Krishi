@@ -12,6 +12,7 @@ export interface VillageData {
   cropType: string;
   sarDecibels: string;
   coordinates: [number, number]; // [lng, lat]
+  centroid?: [number, number];
   pradhanContact: string;
   smsBengali: string;
   river?: string;
