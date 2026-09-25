@@ -3,6 +3,7 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from src.app.pipeline.geospatial.telemetry import (
     fetch_upstream_rain,
@@ -329,7 +330,17 @@ def api_panchayat_dispatch(payload: PanchayatDispatchRequest):
     return path_info
 
 
+from typing import Optional, List, Dict, Any
+from src.app.pipeline.reporting.pdf_generator import generate_flood_assessment_pdf
+
+
+class PdfReportRequest(BaseModel):
+    village: Dict[str, Any]
+    officer_name: Optional[str] = "Saptarshi Ghosh"
+
+
 REGISTERED_OFFICERS = []
+
 
 @app.post("/api/v1/auth/register-phone")
 def register_phone(payload: PhoneRegistrationRequest):
@@ -363,6 +374,27 @@ def transmit_sms(payload: SmsTransmitRequest):
         "delivered": True,
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
+
+
+@app.post("/api/v1/reports/generate-pdf")
+def api_generate_pdf(payload: PdfReportRequest):
+    """
+    Generates and streams official Government of West Bengal Crop Damage Assessment PDF Report.
+    """
+    village_data = payload.village or {}
+    officer_info = {"name": payload.officer_name or "Officer In-Charge (BDO)"}
+    pdf_buffer = generate_flood_assessment_pdf(village_data, officer_info)
+
+    block_raw = village_data.get("block") or village_data.get("name") or "Hooghly"
+    block_name = str(block_raw).replace(" ", "_")
+    filename = f"CropSentinel_Report_{block_name}.pdf"
+
+    return StreamingResponse(
+        pdf_buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+    )
+
 
 
 

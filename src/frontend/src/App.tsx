@@ -325,6 +325,7 @@ export const App: React.FC = () => {
             onClose={() => setIsRightPanelOpen(false)}
             onDispatchRescue={(route) => setRescueRoute(route)}
             officerPhone={officerPhone}
+            officerName={user?.name || 'Saptarshi Ghosh'}
             onTriggerToast={(msg) => {
               setToastMessage(msg);
               setTimeout(() => setToastMessage(null), 5000);

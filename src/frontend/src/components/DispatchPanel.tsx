@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { VillageData } from '../types/disaster';
 import FeaturePhoneMockup from './FeaturePhoneMockup';
 import SarpanchRoutingPanel from './SarpanchRoutingPanel';
+import ReportExportButton from './ReportExportButton';
 import {
   Play,
   Pause,
@@ -20,6 +21,7 @@ interface DispatchPanelProps {
   onClose: () => void;
   onDispatchRescue?: (routeGeoJson: any) => void;
   officerPhone?: string;
+  officerName?: string;
   onTriggerToast?: (msg: string) => void;
 }
 
@@ -29,6 +31,7 @@ export const DispatchPanel: React.FC<DispatchPanelProps> = ({
   onClose,
   onDispatchRescue,
   officerPhone = '',
+  officerName = 'Saptarshi Ghosh',
   onTriggerToast,
 }) => {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
@@ -409,8 +412,12 @@ export const DispatchPanel: React.FC<DispatchPanelProps> = ({
         )}
       </div>
 
-      {/* Bottom Dispatch CTA */}
-      <div className="p-3 bg-white border-t border-slate-200 shrink-0">
+      {/* Bottom Dispatch CTA & Official Report Export */}
+      <div className="p-3 bg-white border-t border-slate-200 shrink-0 flex flex-col gap-2">
+        <ReportExportButton
+          selectedVillage={village}
+          officerName={officerName}
+        />
         <button
           onClick={handleTransmit}
           disabled={isDispatched}
