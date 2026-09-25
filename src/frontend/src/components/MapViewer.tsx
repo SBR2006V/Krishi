@@ -85,48 +85,52 @@ export const MapViewer: React.FC<MapViewerProps> = ({
 
     const addGeoJsonLayers = () => {
       if (map.getSource('active-inundation-src')) {
-        const src = map.getSource('active-inundation-src') as maplibregl.GeoJSONSource;
-        src.setData(geoJsonData as any);
+        (map.getSource('active-inundation-src') as maplibregl.GeoJSONSource).setData(
+          geoJsonData as any
+        );
         return;
       }
 
-      // Add GeoJSON Source
       map.addSource('active-inundation-src', {
         type: 'geojson',
         data: geoJsonData as any,
       });
 
       // Add Fill Layer for Flooded Zones using MapLibre case expression
-      map.addLayer({
-        id: 'flooded-zones-fill',
-        type: 'fill',
-        source: 'active-inundation-src',
-        paint: {
-          'fill-color': [
-            'case',
-            ['>', ['get', 'flooded_acres'], 0],
-            '#dc2626', // Red for flooded blocks
-            '#16a34a', // Green for safe blocks
-          ],
-          'fill-opacity': [
-            'case',
-            ['>', ['get', 'flooded_acres'], 0],
-            0.45,
-            0.15,
-          ],
-        },
-      });
+      if (!map.getLayer('flooded-zones-fill')) {
+        map.addLayer({
+          id: 'flooded-zones-fill',
+          type: 'fill',
+          source: 'active-inundation-src',
+          paint: {
+            'fill-color': [
+              'case',
+              ['>', ['get', 'flooded_acres'], 0],
+              '#dc2626', // Red for flooded blocks
+              '#16a34a', // Green for safe blocks
+            ],
+            'fill-opacity': [
+              'case',
+              ['>', ['get', 'flooded_acres'], 0],
+              0.45,
+              0.15,
+            ],
+          },
+        });
+      }
 
       // Add Line Layer for Authentic Block Boundaries
-      map.addLayer({
-        id: 'block-boundaries-line',
-        type: 'line',
-        source: 'active-inundation-src',
-        paint: {
-          'line-color': '#1e3a8a', // Dark blue boundary lines
-          'line-width': 2,
-        },
-      });
+      if (!map.getLayer('block-boundaries-line')) {
+        map.addLayer({
+          id: 'block-boundaries-line',
+          type: 'line',
+          source: 'active-inundation-src',
+          paint: {
+            'line-color': '#1e3a8a', // Dark blue boundary lines
+            'line-width': 2,
+          },
+        });
+      }
 
       // Polygon Click Event -> Select Block & flyTo
       map.on('click', 'flooded-zones-fill', (e) => {

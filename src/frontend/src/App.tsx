@@ -17,9 +17,64 @@ export const App: React.FC = () => {
   const [selectedVillage, setSelectedVillage] = useState<VillageData>(MOCK_VILLAGES[2]);
   const [geoJsonData, setGeoJsonData] = useState<GeoJsonFeatureCollection | null>(null);
 
+  // Scan trigger loading state
+  const [isScanning, setIsScanning] = useState<boolean>(false);
+
   // Layout Panel Toggles
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState<boolean>(true);
   const [isRightPanelOpen, setIsRightPanelOpen] = useState<boolean>(true);
+
+  // Trigger POST /api/v1/pipeline/run-scan and update map layers & ledger
+  const handleRunScan = async () => {
+    setIsScanning(true);
+    try {
+      const res = await fetch('http://localhost:8000/api/v1/pipeline/run-scan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!res.ok) throw new Error('Run scan request failed');
+      const data: GeoJsonFeatureCollection = await res.json();
+      setGeoJsonData(data);
+
+      if (data.features && data.features.length > 0) {
+        const extractedVillages: VillageData[] = data.features.map((f) => {
+          const props = f.properties;
+          let coords: [number, number] | undefined = props.coordinates;
+          if (!coords && props.centroid && Array.isArray(props.centroid) && props.centroid.length >= 2) {
+            coords = [props.centroid[0], props.centroid[1]];
+          }
+          if (!coords && f.geometry?.type === 'Polygon' && f.geometry.coordinates?.[0]?.[0]) {
+            const pt = f.geometry.coordinates[0][0];
+            if (Array.isArray(pt) && pt.length >= 2) {
+              coords = [pt[0], pt[1]];
+            }
+          }
+          if (!coords) {
+            coords = [87.86, 22.76];
+          }
+          return {
+            ...props,
+            coordinates: coords,
+          };
+        });
+        setVillages(extractedVillages);
+        if (extractedVillages.length > 0) {
+          setSelectedVillage((prev) => {
+            const matched = extractedVillages.find((v) => v.id === prev?.id);
+            return matched || extractedVillages[0];
+          });
+        }
+      }
+      alert('Scan Complete: Inundation acreage dynamically recomputed from SAR backscatter.');
+    } catch (err) {
+      console.error('Error executing SAR pipeline scan:', err);
+      alert('Scan execution failed. Please ensure FastAPI server is running on localhost:8000.');
+    } finally {
+      setIsScanning(false);
+    }
+  };
 
   // Guarded village selection handler
   const handleSelectVillage = (village: any) => {
@@ -179,6 +234,8 @@ export const App: React.FC = () => {
         catchmentStatus={surgeRisk}
         onToggleLeftPanel={() => setIsLeftPanelOpen((prev) => !prev)}
         onToggleRightPanel={() => setIsRightPanelOpen((prev) => !prev)}
+        onRunScan={handleRunScan}
+        isScanning={isScanning}
       />
 
       {/* Main Content Area: Left Ledger + Map Canvas + Right Dispatch */}

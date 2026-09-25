@@ -8,6 +8,9 @@ from src.app.pipeline.geospatial.telemetry import (
     fetch_upstream_rain,
     get_cwc_gauge_summary,
 )
+from src.app.pipeline.ml.change_detector import detect_flood_extent
+from src.app.pipeline.geospatial.risk_evaluator import evaluate_flood_impact
+from src.app.pipeline.geospatial.gee_client import fetch_sar_pair
 
 app = FastAPI(
     title="CropSentinel AI Telemetry API",
@@ -67,11 +70,16 @@ async def get_live_telemetry():
 @app.get("/api/v1/maps/active-inundation")
 def get_active_inundation_map():
     """
-    Reads data/geojson/village_grids.geojson and returns the GeoJSON FeatureCollection.
+    Returns data/geojson/active_inundation.geojson if it exists, falling back to data/geojson/village_grids.geojson.
     """
     base_dir = Path(__file__).resolve().parents[2]
+    active_path = base_dir / "data" / "geojson" / "active_inundation.geojson"
+
+    if active_path.exists():
+        with open(active_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+
     geojson_path = base_dir / "data" / "geojson" / "village_grids.geojson"
-    
     if not geojson_path.exists():
         geojson_path = base_dir / "src" / "frontend" / "public" / "village_grids.geojson"
 
@@ -81,7 +89,7 @@ def get_active_inundation_map():
     with open(geojson_path, "r", encoding="utf-8") as f:
         geojson_data = json.load(f)
 
-    # Calculate gauge surge multiplier if needed
+    # Calculate gauge surge multiplier if needed for baseline fallback
     gauge_info = get_cwc_gauge_summary()
     critical_count = gauge_info.get("critical_count", 0)
     surge_multiplier = 1.0 + (critical_count * 0.25)
@@ -105,4 +113,31 @@ def get_active_inundation_map():
 
     geojson_data["features"] = features
     return geojson_data
+
+
+@app.post("/api/v1/pipeline/run-scan")
+def run_scan():
+    """
+    Executes detect_flood_extent("data/cache/pre_sar.tif", "data/cache/post_sar.tif")
+    and evaluate_flood_impact("data/geojson/flood_mask.geojson", "data/geojson/village_grids.geojson").
+    Returns the refreshed FeatureCollection with dynamic flooded acres.
+    """
+    base_dir = Path(__file__).resolve().parents[2]
+    cache_dir = base_dir / "data" / "cache"
+    pre_path = cache_dir / "pre_sar.tif"
+    post_path = cache_dir / "post_sar.tif"
+
+    if not pre_path.exists() or not post_path.exists():
+        bbox = [87.81, 22.65, 87.98, 22.88]
+        fetch_sar_pair(bbox, ("2024-09-08", "2024-09-12"), ("2024-09-18", "2024-09-22"), str(cache_dir))
+
+    flood_geojson_path = detect_flood_extent(str(pre_path), str(post_path))
+
+    village_geojson_path = base_dir / "data" / "geojson" / "village_grids.geojson"
+    if not village_geojson_path.exists():
+        village_geojson_path = base_dir / "src" / "frontend" / "public" / "village_grids.geojson"
+
+    impact_result = evaluate_flood_impact(flood_geojson_path, str(village_geojson_path))
+    return impact_result
+
 

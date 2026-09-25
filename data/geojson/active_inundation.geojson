@@ -1,0 +1,275 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "id": "0",
+      "type": "Feature",
+      "properties": {
+        "id": "V-101",
+        "district": "Hooghly",
+        "name": "Khanakul-I",
+        "block": "Khanakul",
+        "threatLevel": "CRITICAL",
+        "floodDepthCm": 145,
+        "cropLossPercent": 100.0,
+        "farmersCount": 1240,
+        "cropType": "Aman Paddy",
+        "sarDecibels": "-5.4 dB",
+        "centroid": [
+          87.86,
+          22.76
+        ],
+        "pradhanContact": "+91 98301 44521",
+        "river": "Mundeswari River",
+        "baseline_cropland_acres": 2500,
+        "smsBengali": "\u099c\u09b0\u09c1\u09b0\u09c0 \u09ac\u09a8\u09cd\u09af\u09be \u09b8\u09a4\u09b0\u09cd\u0995\u09a4\u09be: Khanakul-I \u09ac\u09cd\u09b2\u0995\u09c7 Mundeswari River-\u09b0 \u0985\u09ac\u09ac\u09be\u09b9\u09bf\u0995\u09be\u09af\u09bc 7614.45 \u098f\u0995\u09b0 \u099c\u09ae\u09bf \u09aa\u09cd\u09b2\u09be\u09ac\u09bf\u09a4 \u09b9\u09af\u09bc\u09c7\u099b\u09c7 (\u0995\u09cd\u09b7\u09a4\u09bf: 100.0%)\u0964 \u09b8\u09a4\u09b0\u09cd\u0995\u09a4\u09be \u09b8\u09cd\u09a4\u09b0: CRITICAL\u0964 \u0985\u09ac\u09bf\u09b2\u09ae\u09cd\u09ac\u09c7 \u0989\u0981\u099a\u09c1\u09a4\u09c7 \u0986\u09b6\u09cd\u09b0\u09af\u09bc \u09a8\u09bf\u09a8 \u0993 \u0986\u09ae\u09a8 \u09a7\u09be\u09a8 \u09b0\u0995\u09cd\u09b7\u09be \u0995\u09b0\u09c1\u09a8\u0964",
+        "flooded_acres": 7614.45,
+        "crop_loss_pct": 100.0,
+        "threat_level": "CRITICAL"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              87.82,
+              22.720000000000002
+            ],
+            [
+              87.9,
+              22.72
+            ],
+            [
+              87.91,
+              22.800000000000004
+            ],
+            [
+              87.83,
+              22.800000000000004
+            ],
+            [
+              87.82,
+              22.720000000000002
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "id": "1",
+      "type": "Feature",
+      "properties": {
+        "id": "V-103",
+        "district": "Hooghly",
+        "name": "Pursurah North",
+        "block": "Pursurah",
+        "threatLevel": "CRITICAL",
+        "floodDepthCm": 160,
+        "cropLossPercent": 47.1,
+        "farmersCount": 1550,
+        "cropType": "Vegetables & Rice",
+        "sarDecibels": "-6.1 dB",
+        "centroid": [
+          87.95,
+          22.84
+        ],
+        "pradhanContact": "+91 98305 11094",
+        "river": "Damodar River",
+        "baseline_cropland_acres": 3100,
+        "smsBengali": "\u099c\u09b0\u09c1\u09b0\u09c0 \u09ac\u09a8\u09cd\u09af\u09be \u09b8\u09a4\u09b0\u09cd\u0995\u09a4\u09be: Pursurah North \u09ac\u09cd\u09b2\u0995\u09c7 Damodar River-\u09b0 \u0985\u09ac\u09ac\u09be\u09b9\u09bf\u0995\u09be\u09af\u09bc 1461.19 \u098f\u0995\u09b0 \u099c\u09ae\u09bf \u09aa\u09cd\u09b2\u09be\u09ac\u09bf\u09a4 \u09b9\u09af\u09bc\u09c7\u099b\u09c7 (\u0995\u09cd\u09b7\u09a4\u09bf: 47.1%)\u0964 \u09b8\u09a4\u09b0\u09cd\u0995\u09a4\u09be \u09b8\u09cd\u09a4\u09b0: CRITICAL\u0964 \u0985\u09ac\u09bf\u09b2\u09ae\u09cd\u09ac\u09c7 \u0989\u0981\u099a\u09c1\u09a4\u09c7 \u0986\u09b6\u09cd\u09b0\u09af\u09bc \u09a8\u09bf\u09a8 \u0993 \u0986\u09ae\u09a8 \u09a7\u09be\u09a8 \u09b0\u0995\u09cd\u09b7\u09be \u0995\u09b0\u09c1\u09a8\u0964",
+        "flooded_acres": 1461.19,
+        "crop_loss_pct": 47.1,
+        "threat_level": "CRITICAL"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              87.9,
+              22.800000000000004
+            ],
+            [
+              88.0,
+              22.8
+            ],
+            [
+              88.01,
+              22.88
+            ],
+            [
+              87.91,
+              22.88
+            ],
+            [
+              87.9,
+              22.800000000000004
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "id": "2",
+      "type": "Feature",
+      "properties": {
+        "id": "V-102",
+        "district": "Hooghly",
+        "name": "Arambagh Rural",
+        "block": "Arambagh",
+        "threatLevel": "MODERATE",
+        "floodDepthCm": 98,
+        "cropLossPercent": 0.0,
+        "farmersCount": 980,
+        "cropType": "Jute & Rice",
+        "sarDecibels": "-3.8 dB",
+        "centroid": [
+          87.78,
+          22.88
+        ],
+        "pradhanContact": "+91 98302 77129",
+        "river": "Darakeswar River",
+        "baseline_cropland_acres": 2200,
+        "smsBengali": "\u099c\u09b0\u09c1\u09b0\u09c0 \u09ac\u09a8\u09cd\u09af\u09be \u09b8\u09a4\u09b0\u09cd\u0995\u09a4\u09be: Arambagh Rural \u09ac\u09cd\u09b2\u0995\u09c7 Darakeswar River-\u09b0 \u0985\u09ac\u09ac\u09be\u09b9\u09bf\u0995\u09be\u09af\u09bc 0.0 \u098f\u0995\u09b0 \u099c\u09ae\u09bf \u09aa\u09cd\u09b2\u09be\u09ac\u09bf\u09a4 \u09b9\u09af\u09bc\u09c7\u099b\u09c7 (\u0995\u09cd\u09b7\u09a4\u09bf: 0.0%)\u0964 \u09b8\u09a4\u09b0\u09cd\u0995\u09a4\u09be \u09b8\u09cd\u09a4\u09b0: MODERATE\u0964 \u0985\u09ac\u09bf\u09b2\u09ae\u09cd\u09ac\u09c7 \u0989\u0981\u099a\u09c1\u09a4\u09c7 \u0986\u09b6\u09cd\u09b0\u09af\u09bc \u09a8\u09bf\u09a8 \u0993 \u0986\u09ae\u09a8 \u09a7\u09be\u09a8 \u09b0\u0995\u09cd\u09b7\u09be \u0995\u09b0\u09c1\u09a8\u0964",
+        "flooded_acres": 0.0,
+        "crop_loss_pct": 0.0,
+        "threat_level": "MODERATE"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              87.72,
+              22.820000000000004
+            ],
+            [
+              87.84,
+              22.819999999999997
+            ],
+            [
+              87.85,
+              22.92
+            ],
+            [
+              87.73,
+              22.919999999999998
+            ],
+            [
+              87.72,
+              22.820000000000004
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "id": "3",
+      "type": "Feature",
+      "properties": {
+        "id": "V-104",
+        "district": "Paschim Medinipur",
+        "name": "Ghatal Border",
+        "block": "Ghatal",
+        "threatLevel": "MODERATE",
+        "floodDepthCm": 52,
+        "cropLossPercent": 0.0,
+        "farmersCount": 610,
+        "cropType": "Sesame & Paddy",
+        "sarDecibels": "-2.1 dB",
+        "centroid": [
+          87.72,
+          22.66
+        ],
+        "pradhanContact": "+91 98304 88310",
+        "river": "Rupnarayan River",
+        "baseline_cropland_acres": 1800,
+        "smsBengali": "\u099c\u09b0\u09c1\u09b0\u09c0 \u09ac\u09a8\u09cd\u09af\u09be \u09b8\u09a4\u09b0\u09cd\u0995\u09a4\u09be: Ghatal Border \u09ac\u09cd\u09b2\u0995\u09c7 Rupnarayan River-\u09b0 \u0985\u09ac\u09ac\u09be\u09b9\u09bf\u0995\u09be\u09af\u09bc 0.0 \u098f\u0995\u09b0 \u099c\u09ae\u09bf \u09aa\u09cd\u09b2\u09be\u09ac\u09bf\u09a4 \u09b9\u09af\u09bc\u09c7\u099b\u09c7 (\u0995\u09cd\u09b7\u09a4\u09bf: 0.0%)\u0964 \u09b8\u09a4\u09b0\u09cd\u0995\u09a4\u09be \u09b8\u09cd\u09a4\u09b0: MODERATE\u0964 \u0985\u09ac\u09bf\u09b2\u09ae\u09cd\u09ac\u09c7 \u0989\u0981\u099a\u09c1\u09a4\u09c7 \u0986\u09b6\u09cd\u09b0\u09af\u09bc \u09a8\u09bf\u09a8 \u0993 \u0986\u09ae\u09a8 \u09a7\u09be\u09a8 \u09b0\u0995\u09cd\u09b7\u09be \u0995\u09b0\u09c1\u09a8\u0964",
+        "flooded_acres": 0.0,
+        "crop_loss_pct": 0.0,
+        "threat_level": "MODERATE"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              87.65,
+              22.599999999999998
+            ],
+            [
+              87.76,
+              22.600000000000005
+            ],
+            [
+              87.77,
+              22.7
+            ],
+            [
+              87.66,
+              22.7
+            ],
+            [
+              87.65,
+              22.599999999999998
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "id": "4",
+      "type": "Feature",
+      "properties": {
+        "id": "V-105",
+        "district": "Hooghly",
+        "name": "Singur Lowlands",
+        "block": "Singur",
+        "threatLevel": "MODERATE",
+        "floodDepthCm": 32,
+        "cropLossPercent": 0.0,
+        "farmersCount": 430,
+        "cropType": "Potato & Rice",
+        "sarDecibels": "-1.2 dB",
+        "centroid": [
+          88.23,
+          22.81
+        ],
+        "pradhanContact": "+91 98309 33201",
+        "river": "Ganga / Hooghly",
+        "baseline_cropland_acres": 1500,
+        "smsBengali": "\u099c\u09b0\u09c1\u09b0\u09c0 \u09ac\u09a8\u09cd\u09af\u09be \u09b8\u09a4\u09b0\u09cd\u0995\u09a4\u09be: Singur Lowlands \u09ac\u09cd\u09b2\u0995\u09c7 Ganga / Hooghly-\u09b0 \u0985\u09ac\u09ac\u09be\u09b9\u09bf\u0995\u09be\u09af\u09bc 0.0 \u098f\u0995\u09b0 \u099c\u09ae\u09bf \u09aa\u09cd\u09b2\u09be\u09ac\u09bf\u09a4 \u09b9\u09af\u09bc\u09c7\u099b\u09c7 (\u0995\u09cd\u09b7\u09a4\u09bf: 0.0%)\u0964 \u09b8\u09a4\u09b0\u09cd\u0995\u09a4\u09be \u09b8\u09cd\u09a4\u09b0: MODERATE\u0964 \u0985\u09ac\u09bf\u09b2\u09ae\u09cd\u09ac\u09c7 \u0989\u0981\u099a\u09c1\u09a4\u09c7 \u0986\u09b6\u09cd\u09b0\u09af\u09bc \u09a8\u09bf\u09a8 \u0993 \u0986\u09ae\u09a8 \u09a7\u09be\u09a8 \u09b0\u0995\u09cd\u09b7\u09be \u0995\u09b0\u09c1\u09a8\u0964",
+        "flooded_acres": 0.0,
+        "crop_loss_pct": 0.0,
+        "threat_level": "MODERATE"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              88.18,
+              22.76
+            ],
+            [
+              88.28,
+              22.76
+            ],
+            [
+              88.29,
+              22.86
+            ],
+            [
+              88.19,
+              22.859999999999992
+            ],
+            [
+              88.18,
+              22.76
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

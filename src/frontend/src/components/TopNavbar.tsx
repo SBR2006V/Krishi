@@ -7,6 +7,8 @@ interface TopNavbarProps {
   catchmentStatus?: string;
   onToggleLeftPanel?: () => void;
   onToggleRightPanel?: () => void;
+  onRunScan?: () => void;
+  isScanning?: boolean;
 }
 
 export const TopNavbar: React.FC<TopNavbarProps> = ({
@@ -15,63 +17,84 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
   catchmentStatus = 'HIGH_SURGE_RISK',
   onToggleLeftPanel,
   onToggleRightPanel,
+  onRunScan,
+  isScanning = false,
 }) => {
   return (
-    <header className="h-14 w-full bg-[#0b1626] text-white flex items-center justify-between px-4 z-30 shadow-md border-b border-slate-800 shrink-0 font-sans">
-      {/* Left Branding Group */}
+    <header className="h-16 w-full bg-slate-900 text-white flex items-center justify-between px-4 border-b border-slate-800 z-30 select-none shrink-0 font-sans">
+      {/* Left Branding Block */}
       <div className="flex items-center gap-3">
-        {/* WB Govt Yellow Badge */}
-        <div className="bg-amber-400 text-slate-950 font-black px-2.5 py-1 text-[11px] leading-tight tracking-tight rounded-sm shadow-sm text-center uppercase">
-          Govt of West Bengal
+        {/* WB Govt Badge */}
+        <div className="bg-slate-800 text-slate-300 font-semibold px-2 py-0.5 text-xs rounded-md border border-slate-700 uppercase tracking-wide">
+          GOVT OF WEST BENGAL
         </div>
 
         {/* Title & Subtitle */}
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
-            <span className="text-base font-extrabold tracking-wide uppercase text-white">
-              CROP SENTINEL AI
+            <span className="text-lg font-bold tracking-wider uppercase text-white">
+              CROPSENTINEL AI
             </span>
             <span className="bg-red-600 text-white font-extrabold text-[10px] px-2 py-0.5 rounded uppercase tracking-wider flex items-center gap-1 animate-pulse">
               <span className="w-1.5 h-1.5 rounded-full bg-white" />
               EMERGENCY ACTIVE
             </span>
           </div>
-          <span className="text-[11px] font-medium text-slate-300">
-            Department of Agriculture & Disaster Management - Hooghly Basin Division
+          <span className="text-xs text-slate-400 block">
+            Department of Agriculture - Hooghly Basin Division
           </span>
         </div>
       </div>
 
-      {/* Live Environmental Telemetry Indicators */}
-      <div className="hidden md:flex items-center gap-3 bg-slate-900/90 border border-slate-700 px-3 py-1 rounded-lg">
-        {/* Upstream Rain */}
-        <div className="flex items-center gap-1.5 text-xs">
-          <CloudRain className="w-4 h-4 text-sky-400" />
-          <span className="text-slate-300 font-medium">Upstream DVC Rain:</span>
-          <strong className="text-sky-300 font-extrabold">{upstreamRainMm} mm</strong>
-        </div>
-
-        <div className="w-px h-4 bg-slate-700" />
-
-        {/* CWC Danger Gauges */}
-        <div className="flex items-center gap-1.5 text-xs">
-          <Activity className="w-4 h-4 text-amber-400" />
-          <span className="text-slate-300 font-medium">CWC Danger Gauges:</span>
-          <strong className="text-amber-400 font-extrabold">{criticalGaugeCount}</strong>
-        </div>
-
-        <div className="w-px h-4 bg-slate-700" />
-
-        {/* Catchment Surge Status */}
-        <span
-          className={`text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider ${
-            catchmentStatus === 'HIGH_SURGE_RISK'
-              ? 'bg-red-600 text-white'
-              : 'bg-emerald-600 text-white'
-          }`}
+      {/* Action & Telemetry Badges */}
+      <div className="hidden lg:flex items-center gap-3">
+        {/* RUN SAR SCAN Button */}
+        <button
+          onClick={onRunScan}
+          disabled={isScanning}
+          className="bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-slate-950 font-bold px-3 py-1.5 rounded text-xs transition shadow-sm flex items-center gap-1.5 cursor-pointer"
         >
-          {catchmentStatus}
-        </span>
+          {isScanning ? (
+            <>
+              <span className="w-2 h-2 rounded-full bg-slate-950 animate-ping" />
+              Processing SAR Backscatter...
+            </>
+          ) : (
+            '⚡ RUN SAR SCAN'
+          )}
+        </button>
+
+        {/* Telemetry Widgets Pill */}
+        <div className="flex items-center gap-3 bg-slate-800/80 border border-slate-700 px-3 py-1 rounded-md text-xs">
+          {/* Upstream DVC Rain */}
+          <div className="flex items-center gap-1.5">
+            <CloudRain className="w-4 h-4 text-sky-400" />
+            <span className="text-slate-300 font-medium">Upstream DVC Rain:</span>
+            <strong className="text-sky-300 font-bold">{upstreamRainMm} mm</strong>
+          </div>
+
+          <div className="w-px h-4 bg-slate-700" />
+
+          {/* CWC Danger Gauges */}
+          <div className="flex items-center gap-1.5">
+            <Activity className="w-4 h-4 text-amber-400" />
+            <span className="text-slate-300 font-medium">CWC Danger Gauges:</span>
+            <strong className="text-amber-400 font-bold">{criticalGaugeCount}</strong>
+          </div>
+
+          <div className="w-px h-4 bg-slate-700" />
+
+          {/* Catchment Surge Status */}
+          <span
+            className={`text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider ${
+              catchmentStatus === 'HIGH_SURGE_RISK'
+                ? 'bg-red-600 text-white'
+                : 'bg-emerald-600 text-white'
+            }`}
+          >
+            {catchmentStatus}
+          </span>
+        </div>
       </div>
 
       {/* Right Controls & Profile */}
