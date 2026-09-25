@@ -141,3 +141,93 @@ def run_scan():
     return impact_result
 
 
+from pydantic import BaseModel
+from typing import Optional, List
+from src.app.pipeline.verification.citizen_feedback import (
+    request_citizen_confirmation,
+    simulate_citizen_response,
+)
+from src.app.pipeline.routing.rescue_router import calculate_shortest_safe_route
+
+
+class DispatchRequest(BaseModel):
+    village_id: str
+    target_coords: Optional[List[float]] = None
+    rescue_base_coords: Optional[List[float]] = None
+
+
+@app.get("/api/v1/vectors/rivers")
+def get_river_vectors():
+    """
+    Returns GeoJSON line features of Damodar, Mundeswari, and Rupnarayan rivers
+    to render directly on MapLibre.
+    """
+    base_dir = Path(__file__).resolve().parents[2]
+    rivers_path = base_dir / "data" / "geojson" / "wb_river_lines.geojson"
+
+    if not rivers_path.exists():
+        from scripts.download_wb_vectors import generate_wb_vectors
+        generate_wb_vectors()
+
+    with open(rivers_path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+@app.get("/api/v1/vectors/blocks")
+def get_block_vectors():
+    """
+    Returns block polygon boundaries for Hooghly and Howrah districts.
+    """
+    base_dir = Path(__file__).resolve().parents[2]
+    blocks_path = base_dir / "data" / "geojson" / "wb_admin_blocks.geojson"
+
+    if not blocks_path.exists():
+        from scripts.download_wb_vectors import generate_wb_vectors
+        generate_wb_vectors()
+
+    with open(blocks_path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+@app.post("/api/v1/alerts/request-citizen-confirmation")
+def api_request_citizen_confirmation(village_id: str = "V-101"):
+    return request_citizen_confirmation(village_id)
+
+
+@app.post("/api/v1/alerts/simulate-citizen-response")
+def api_simulate_citizen_response(
+    village_id: str = "V-101",
+    sar_inundation_pct: float = 65.0,
+    yes_votes: int = 38,
+    no_votes: int = 4
+):
+    return simulate_citizen_response(
+        village_id=village_id,
+        sar_inundation_pct=sar_inundation_pct,
+        yes_votes=yes_votes,
+        no_votes=no_votes
+    )
+
+
+@app.post("/api/v1/rescue/dispatch")
+def api_dispatch_rescue(payload: DispatchRequest):
+    route_info = calculate_shortest_safe_route(
+        rescue_base_coords=payload.rescue_base_coords,
+        target_coords=payload.target_coords
+    )
+    return {
+        "dispatch_id": f"DISPATCH-{payload.village_id}-882",
+        "village_id": payload.village_id,
+        "verified_pct": "90.5%",
+        "status": route_info["status"],
+        "assigned_unit": route_info["assigned_unit"],
+        "team_leader": route_info["team_leader"],
+        "contact": route_info["contact"],
+        "equipment": route_info["equipment"],
+        "distance_km": route_info["distance_km"],
+        "eta_minutes": route_info["eta_minutes"],
+        "route_geojson": route_info["route_geojson"]
+    }
+
+
+

@@ -1,21 +1,28 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
 import TopNavbar from './components/TopNavbar';
 import EmergencyLedger from './components/EmergencyLedger';
 import MapViewer from './components/MapViewer';
 import DispatchPanel from './components/DispatchPanel';
+import LoginPage from './components/LoginPage';
 import { MOCK_VILLAGES } from './data/villages';
 import type { VillageData, GeoJsonFeatureCollection } from './types/disaster';
 
 export const App: React.FC = () => {
+  const { isAuthenticated, isLoading, user, logout } = useAuth0();
+  const [isDemoBypassed, setIsDemoBypassed] = useState<boolean>(false);
+
   // Live Telemetry Header State
-  const [upstreamRain, setUpstreamRain] = useState<number>(78.4);
-  const [dangerGaugesCount, setDangerGaugesCount] = useState<number>(2);
-  const [surgeRisk, setSurgeRisk] = useState<string>('HIGH_SURGE_RISK');
+  const [upstreamRain, setUpstreamRain] = useState<number | null>(null);
+  const [dangerGauges, setDangerGauges] = useState<number | null>(null);
+  const [riskStatus, setRiskStatus] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Village & GeoJSON State
   const [villages, setVillages] = useState<VillageData[]>(MOCK_VILLAGES);
   const [selectedVillage, setSelectedVillage] = useState<VillageData>(MOCK_VILLAGES[2]);
   const [geoJsonData, setGeoJsonData] = useState<GeoJsonFeatureCollection | null>(null);
+  const [rescueRoute, setRescueRoute] = useState<any>(null);
 
   // Scan trigger loading state
   const [isScanning, setIsScanning] = useState<boolean>(false);
@@ -25,7 +32,7 @@ export const App: React.FC = () => {
   const [isRightPanelOpen, setIsRightPanelOpen] = useState<boolean>(true);
 
   // Trigger POST /api/v1/pipeline/run-scan and update map layers & ledger
-  const handleRunScan = async () => {
+  const runSarScan = async () => {
     setIsScanning(true);
     try {
       const res = await fetch('http://localhost:8000/api/v1/pipeline/run-scan', {
@@ -67,10 +74,12 @@ export const App: React.FC = () => {
           });
         }
       }
-      alert('Scan Complete: Inundation acreage dynamically recomputed from SAR backscatter.');
+      setToastMessage('✓ Live SAR Inundation Recomputed');
+      setTimeout(() => setToastMessage(null), 4000);
     } catch (err) {
       console.error('Error executing SAR pipeline scan:', err);
-      alert('Scan execution failed. Please ensure FastAPI server is running on localhost:8000.');
+      setToastMessage('Scan execution failed');
+      setTimeout(() => setToastMessage(null), 4000);
     } finally {
       setIsScanning(false);
     }
@@ -116,8 +125,8 @@ export const App: React.FC = () => {
         const risk = data.risk_status ?? data.catchment_status ?? 'HIGH_SURGE_RISK';
 
         setUpstreamRain(rain);
-        setDangerGaugesCount(dangerCount);
-        setSurgeRisk(risk);
+        setDangerGauges(dangerCount);
+        setRiskStatus(risk);
       } catch (err) {
         console.warn('Backend server offline. Falling back to local river_gauges.json telemetry data.', err);
         try {
@@ -128,8 +137,8 @@ export const App: React.FC = () => {
               ? gauges.filter((g: any) => g.current_water_level_m >= g.danger_level_m)
               : [];
             setUpstreamRain(78.4);
-            setDangerGaugesCount(criticals.length);
-            setSurgeRisk(criticals.length > 0 ? 'HIGH_SURGE_RISK' : 'NORMAL');
+            setDangerGauges(criticals.length);
+            setRiskStatus(criticals.length > 0 ? 'HIGH_SURGE_RISK' : 'NORMAL');
           }
         } catch (fallbackErr) {
           console.error('Fallback telemetry load error:', fallbackErr);
@@ -225,17 +234,53 @@ export const App: React.FC = () => {
     fetchGeoJsonMap();
   }, []);
 
+  // Loading State Indicator
+  if (isLoading && !isDemoBypassed) {
+    return (
+      <div className="w-screen h-screen bg-slate-950 flex flex-col items-center justify-center text-white font-sans">
+        <div className="w-10 h-10 border-4 border-amber-400 border-t-transparent rounded-full animate-spin mb-3" />
+        <span className="text-xs font-bold tracking-widest text-slate-400 uppercase">
+          VERIFYING AUTH0 CREDENTIALS...
+        </span>
+      </div>
+    );
+  }
+
+  // Auth Guard: Render LoginPage when unauthenticated
+  const isUserAuthenticated = isAuthenticated || isDemoBypassed;
+  if (!isUserAuthenticated) {
+    return <LoginPage onBypassLogin={() => setIsDemoBypassed(true)} />;
+  }
+
+  const activeOfficer = user || (isDemoBypassed ? { name: 'Officer In-Charge (BDO)', email: 'bdo.arambagh@wb.gov.in' } : null);
+
+  const handleLogout = () => {
+    if (isAuthenticated) {
+      logout({ logoutParams: { returnTo: window.location.origin } });
+    }
+    setIsDemoBypassed(false);
+  };
+
   return (
-    <div className="w-screen h-screen flex flex-col overflow-hidden bg-slate-950 font-sans select-none">
+    <div className="w-screen h-screen flex flex-col overflow-hidden bg-slate-950 font-sans select-none relative">
+      {/* Toast Notification Banner */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-emerald-600 text-white font-bold px-4 py-2.5 rounded-lg shadow-2xl flex items-center gap-2 text-sm border border-emerald-400/30 animate-pulse">
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
       {/* Top Header Navbar with Live Dynamic Telemetry */}
       <TopNavbar
         upstreamRainMm={upstreamRain}
-        criticalGaugeCount={dangerGaugesCount}
-        catchmentStatus={surgeRisk}
+        criticalGaugeCount={dangerGauges}
+        catchmentStatus={riskStatus}
         onToggleLeftPanel={() => setIsLeftPanelOpen((prev) => !prev)}
         onToggleRightPanel={() => setIsRightPanelOpen((prev) => !prev)}
-        onRunScan={handleRunScan}
+        onRunScan={runSarScan}
         isScanning={isScanning}
+        user={activeOfficer}
+        onLogout={handleLogout}
       />
 
       {/* Main Content Area: Left Ledger + Map Canvas + Right Dispatch */}
@@ -255,6 +300,7 @@ export const App: React.FC = () => {
           villages={villages}
           selectedVillage={selectedVillage}
           onSelectVillage={handleSelectVillage}
+          rescueRoute={rescueRoute}
         />
 
         {/* Right Dispatch Confirmation Panel */}
@@ -263,6 +309,7 @@ export const App: React.FC = () => {
             village={selectedVillage}
             isOpen={isRightPanelOpen}
             onClose={() => setIsRightPanelOpen(false)}
+            onDispatchRescue={(route) => setRescueRoute(route)}
           />
         )}
       </div>
@@ -271,3 +318,4 @@ export const App: React.FC = () => {
 };
 
 export default App;
+

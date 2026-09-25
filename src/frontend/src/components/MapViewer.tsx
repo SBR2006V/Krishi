@@ -8,6 +8,7 @@ interface MapViewerProps {
   villages: VillageData[];
   selectedVillage: VillageData;
   onSelectVillage: (village: VillageData) => void;
+  rescueRoute?: any;
 }
 
 export const MapViewer: React.FC<MapViewerProps> = ({
@@ -15,6 +16,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
   villages,
   selectedVillage,
   onSelectVillage,
+  rescueRoute,
 }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -159,6 +161,46 @@ export const MapViewer: React.FC<MapViewerProps> = ({
       map.once('load', addGeoJsonLayers);
     }
   }, [geoJsonData, villages, onSelectVillage]);
+
+  // Render Rescue Shortest Safe Route LineString
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !rescueRoute) return;
+
+    const addRescueRouteLayer = () => {
+      if (map.getSource('rescue-route-src')) {
+        (map.getSource('rescue-route-src') as maplibregl.GeoJSONSource).setData(rescueRoute);
+      } else {
+        map.addSource('rescue-route-src', {
+          type: 'geojson',
+          data: rescueRoute,
+        });
+      }
+
+      if (!map.getLayer('rescue-route-line')) {
+        map.addLayer({
+          id: 'rescue-route-line',
+          type: 'line',
+          source: 'rescue-route-src',
+          layout: {
+            'line-join': 'round',
+            'line-cap': 'round',
+          },
+          paint: {
+            'line-color': '#06b6d4', // Cyan route stroke
+            'line-width': 5,
+            'line-dasharray': [2, 1],
+          },
+        });
+      }
+    };
+
+    if (map.isStyleLoaded()) {
+      addRescueRouteLayer();
+    } else {
+      map.once('load', addRescueRouteLayer);
+    }
+  }, [rescueRoute]);
 
   // Render Custom Village Markers
   useEffect(() => {

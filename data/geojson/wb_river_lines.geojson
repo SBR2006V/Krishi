@@ -1,0 +1,10 @@
+{
+"type": "FeatureCollection",
+"name": "wb_river_lines",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "river_name": "Damodar River", "basin": "Damodar Lower Basin" }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 87.35, 23.25 ], [ 87.6, 23.05 ], [ 87.82, 22.88 ], [ 87.92, 22.75 ], [ 88.05, 22.55 ], [ 88.12, 22.4 ] ] ] } },
+{ "type": "Feature", "properties": { "river_name": "Mundeswari River", "basin": "Damodar Lower Basin" }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 87.82, 22.88 ], [ 87.86, 22.76 ], [ 87.89, 22.65 ], [ 87.92, 22.5 ], [ 87.96, 22.4 ] ] ] } },
+{ "type": "Feature", "properties": { "river_name": "Rupnarayan River", "basin": "Damodar Lower Basin" }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 87.78, 22.62 ], [ 87.85, 22.5 ], [ 87.95, 22.38 ], [ 88.08, 22.25 ], [ 88.18, 22.15 ] ] ] } }
+]
+}

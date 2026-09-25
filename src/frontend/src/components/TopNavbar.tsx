@@ -1,25 +1,32 @@
 import React from 'react';
-import { UserCheck, SlidersHorizontal, AlertOctagon, CloudRain, Activity } from 'lucide-react';
+import { UserCheck, SlidersHorizontal, AlertOctagon, CloudRain, Activity, LogOut } from 'lucide-react';
 
 interface TopNavbarProps {
-  upstreamRainMm?: number;
-  criticalGaugeCount?: number;
-  catchmentStatus?: string;
+  upstreamRainMm?: number | null;
+  criticalGaugeCount?: number | null;
+  catchmentStatus?: string | null;
   onToggleLeftPanel?: () => void;
   onToggleRightPanel?: () => void;
   onRunScan?: () => void;
   isScanning?: boolean;
+  user?: any;
+  onLogout?: () => void;
 }
 
 export const TopNavbar: React.FC<TopNavbarProps> = ({
-  upstreamRainMm = 78.4,
-  criticalGaugeCount = 2,
-  catchmentStatus = 'HIGH_SURGE_RISK',
+  upstreamRainMm = null,
+  criticalGaugeCount = null,
+  catchmentStatus = null,
   onToggleLeftPanel,
   onToggleRightPanel,
   onRunScan,
   isScanning = false,
+  user = null,
+  onLogout,
 }) => {
+  const officerName = user?.name || user?.email || 'Officer In-Charge';
+  const officerEmail = user?.email || 'officer@wb.gov.in';
+
   return (
     <header className="h-16 w-full bg-slate-900 text-white flex items-center justify-between px-4 border-b border-slate-800 z-30 select-none shrink-0 font-sans">
       {/* Left Branding Block */}
@@ -41,14 +48,14 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
             </span>
           </div>
           <span className="text-xs text-slate-400 block">
-            Department of Agriculture - Hooghly Basin Division
+            Hooghly Basin Division
           </span>
         </div>
       </div>
 
       {/* Action & Telemetry Badges */}
       <div className="hidden lg:flex items-center gap-3">
-        {/* RUN SAR SCAN Button */}
+        {/* RUN SENTINEL-1 SAR SCAN Button */}
         <button
           onClick={onRunScan}
           disabled={isScanning}
@@ -57,10 +64,10 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
           {isScanning ? (
             <>
               <span className="w-2 h-2 rounded-full bg-slate-950 animate-ping" />
-              Processing SAR Backscatter...
+              Scanning SAR Backscatter...
             </>
           ) : (
-            '⚡ RUN SAR SCAN'
+            '⚡ RUN SENTINEL-1 SAR SCAN'
           )}
         </button>
 
@@ -70,7 +77,9 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
           <div className="flex items-center gap-1.5">
             <CloudRain className="w-4 h-4 text-sky-400" />
             <span className="text-slate-300 font-medium">Upstream DVC Rain:</span>
-            <strong className="text-sky-300 font-bold">{upstreamRainMm} mm</strong>
+            <strong className="text-sky-300 font-bold">
+              {upstreamRainMm !== null && upstreamRainMm !== undefined ? `${upstreamRainMm} mm` : 'Fetching...'}
+            </strong>
           </div>
 
           <div className="w-px h-4 bg-slate-700" />
@@ -79,7 +88,9 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
           <div className="flex items-center gap-1.5">
             <Activity className="w-4 h-4 text-amber-400" />
             <span className="text-slate-300 font-medium">CWC Danger Gauges:</span>
-            <strong className="text-amber-400 font-bold">{criticalGaugeCount}</strong>
+            <strong className="text-amber-400 font-bold">
+              {criticalGaugeCount !== null && criticalGaugeCount !== undefined ? criticalGaugeCount : 'Fetching...'}
+            </strong>
           </div>
 
           <div className="w-px h-4 bg-slate-700" />
@@ -89,10 +100,12 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
             className={`text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider ${
               catchmentStatus === 'HIGH_SURGE_RISK'
                 ? 'bg-red-600 text-white'
-                : 'bg-emerald-600 text-white'
+                : catchmentStatus === 'NORMAL'
+                ? 'bg-emerald-600 text-white'
+                : 'bg-amber-600 text-white'
             }`}
           >
-            {catchmentStatus}
+            {catchmentStatus || 'STANDBY'}
           </span>
         </div>
       </div>
@@ -117,19 +130,29 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
           <span>Dispatch Control</span>
         </button>
 
-        {/* Profile Pill */}
-        <div className="flex items-center gap-2 bg-slate-800/90 border border-slate-700/80 px-3 py-1 rounded-full text-xs ml-2">
-          <div className="p-1 rounded-full bg-amber-400 text-slate-950">
+        {/* Profile Pill & Logout Button */}
+        <div className="flex items-center gap-2 bg-slate-800/90 border border-slate-700/80 pl-2.5 pr-1 py-1 rounded-full text-xs ml-2">
+          <div className="p-1 rounded-full bg-amber-400 text-slate-950 shrink-0">
             <UserCheck className="w-3.5 h-3.5" />
           </div>
-          <div className="flex flex-col leading-tight">
-            <span className="font-bold text-slate-100 text-[11px]">
-              Officer In-Charge
+          <div className="flex flex-col leading-tight max-w-[140px] truncate">
+            <span className="font-bold text-slate-100 text-[11px] truncate" title={officerName}>
+              {officerName}
             </span>
-            <span className="text-[9px] font-semibold text-amber-400 uppercase tracking-wide">
-              AUTHORIZED FIELD OFFICER
+            <span className="text-[9px] font-semibold text-amber-400 uppercase tracking-wide truncate" title={officerEmail}>
+              {officerEmail}
             </span>
           </div>
+
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              className="bg-red-600/80 hover:bg-red-600 text-white p-1.5 rounded-full transition ml-1 cursor-pointer"
+              title="Sign Out"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </div>
     </header>
