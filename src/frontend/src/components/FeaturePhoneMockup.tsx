@@ -1,22 +1,27 @@
 import React from 'react';
-import { Signal, Battery, PhoneCall, PhoneOff } from 'lucide-react';
+import { Signal, Battery, PhoneCall, PhoneOff, Sparkles, Loader2 } from 'lucide-react';
 
 interface FeaturePhoneMockupProps {
   smsContent: string;
   recipientPhone: string;
   locationName: string;
+  bdoSummary?: string;
+  isLoading?: boolean;
 }
 
 export const FeaturePhoneMockup: React.FC<FeaturePhoneMockupProps> = ({
   smsContent,
   recipientPhone,
   locationName,
+  bdoSummary,
+  isLoading = false,
 }) => {
   return (
     <div className="flex flex-col gap-1.5 w-full font-mono">
       {/* Label Row */}
       <div className="flex items-center justify-between text-[10px]">
-        <span className="font-extrabold text-slate-700 uppercase tracking-wide">
+        <span className="font-extrabold text-slate-700 uppercase tracking-wide flex items-center gap-1">
+          <Sparkles className="w-3 h-3 text-purple-600" />
           GEMINI BENGALI SMS MOCKUP
         </span>
         <span className="bg-amber-400 text-slate-950 font-black px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider">
@@ -30,7 +35,7 @@ export const FeaturePhoneMockup: React.FC<FeaturePhoneMockupProps> = ({
         <div className="w-12 h-1 bg-slate-800 rounded-full mb-0.5" />
 
         {/* Green Backlit LCD Screen */}
-        <div className="w-full bg-[#052e16] border-2 border-emerald-950 rounded-lg p-2.5 text-[#22c55e] flex flex-col justify-between shadow-inner h-52 overflow-hidden select-text">
+        <div className="w-full bg-[#052e16] border-2 border-emerald-950 rounded-lg p-2.5 text-[#22c55e] flex flex-col justify-between shadow-inner h-56 overflow-hidden select-text">
           {/* Status Bar */}
           <div className="flex items-center justify-between text-[9px] border-b border-[#14532d] pb-1 mb-1.5 font-bold tracking-tight text-[#4ade80]">
             <div className="flex items-center gap-1">
@@ -45,13 +50,33 @@ export const FeaturePhoneMockup: React.FC<FeaturePhoneMockupProps> = ({
           </div>
 
           {/* Recipient Header */}
-          <div className="text-[10px] font-bold text-[#86efac] mb-1 leading-tight">
-            TO: {recipientPhone} ({locationName})
+          <div className="text-[10px] font-bold text-[#86efac] mb-1 leading-tight flex items-center justify-between">
+            <span>TO: {recipientPhone} ({locationName})</span>
+          </div>
+
+          {/* Subtle AI Badge above SMS text area */}
+          <div className="flex items-center gap-1 bg-[#022c22] border border-[#14532d] text-[#86efac] text-[8px] font-bold px-1.5 py-0.5 rounded w-max mb-1 uppercase tracking-wider">
+            <Sparkles className="w-2.5 h-2.5 text-[#4ade80]" />
+            AI GENERATED • GEMINI 2.5 FLASH
           </div>
 
           {/* Bengali SMS Content */}
-          <div className="text-[11px] font-medium leading-snug overflow-y-auto flex-1 text-[#4ade80] pr-1 scrollbar-thin">
-            {smsContent}
+          <div className="text-[11px] font-medium leading-snug overflow-y-auto flex-1 text-[#4ade80] pr-1 scrollbar-thin flex flex-col gap-1.5">
+            {isLoading ? (
+              <div className="flex items-center gap-2 text-amber-300 py-2">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>Generating Gemini 2.5 Flash Advisory...</span>
+              </div>
+            ) : (
+              <>
+                <div>{smsContent}</div>
+                {bdoSummary && (
+                  <div className="mt-1 pt-1 border-t border-[#14532d] text-[9px] text-[#86efac] font-sans">
+                    <strong>BDO Note:</strong> {bdoSummary}
+                  </div>
+                )}
+              </>
+            )}
           </div>
 
           {/* Screen Softkeys */}

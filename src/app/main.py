@@ -332,11 +332,16 @@ def api_panchayat_dispatch(payload: PanchayatDispatchRequest):
 
 from typing import Optional, List, Dict, Any
 from src.app.pipeline.reporting.pdf_generator import generate_flood_assessment_pdf
+from src.app.pipeline.ai.gemini_advisory import generate_village_advisory
 
 
 class PdfReportRequest(BaseModel):
     village: Dict[str, Any]
     officer_name: Optional[str] = "Saptarshi Ghosh"
+
+
+class AdvisoryRequest(BaseModel):
+    village: Dict[str, Any]
 
 
 REGISTERED_OFFICERS = []
@@ -394,6 +399,16 @@ def api_generate_pdf(payload: PdfReportRequest):
         media_type="application/pdf",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'}
     )
+
+
+@app.post("/api/v1/alerts/generate-advisory")
+def api_generate_advisory(payload: AdvisoryRequest):
+    """
+    Generates live multilingual Bengali flood advisories and BDO executive summary using Gemini 2.5 Flash.
+    """
+    village_data = payload.village or {}
+    return generate_village_advisory(village_data)
+
 
 
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { VillageData } from '../types/disaster';
 import FeaturePhoneMockup from './FeaturePhoneMockup';
 import SarpanchRoutingPanel from './SarpanchRoutingPanel';
@@ -13,6 +13,7 @@ import {
   Droplets,
   Waves,
   X,
+  Sparkles,
 } from 'lucide-react';
 
 interface DispatchPanelProps {
@@ -37,6 +38,14 @@ export const DispatchPanel: React.FC<DispatchPanelProps> = ({
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [isDispatched, setIsDispatched] = useState(false);
 
+  // Gemini 2.5 Flash Advisory State
+  const [advisory, setAdvisory] = useState<{
+    sms_bengali: string;
+    voice_transcript_bengali: string;
+    bdo_summary: string;
+  } | null>(null);
+  const [isLoadingAdvisory, setIsLoadingAdvisory] = useState<boolean>(false);
+
   // Citizen Verification & Recalibration State
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationData, setVerificationData] = useState<any>(null);
@@ -46,6 +55,29 @@ export const DispatchPanel: React.FC<DispatchPanelProps> = ({
   const [rescueData, setRescueData] = useState<any>(null);
 
   const activePhone = officerPhone || village.pradhanContact || '+91 98305 11094';
+
+  // Automatically trigger Gemini API advisory generation when selected village changes
+  useEffect(() => {
+    if (!village) return;
+    setIsLoadingAdvisory(true);
+    fetch('http://localhost:8000/api/v1/alerts/generate-advisory', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ village }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.sms_bengali) {
+          setAdvisory(data);
+        }
+      })
+      .catch((err) => {
+        console.error('Error generating Gemini 2.5 Flash advisory:', err);
+      })
+      .finally(() => {
+        setIsLoadingAdvisory(false);
+      });
+  }, [village?.id, village?.name]);
 
   const handleRequestCitizenConfirmation = async () => {
     setIsVerifying(true);
@@ -351,11 +383,31 @@ export const DispatchPanel: React.FC<DispatchPanelProps> = ({
           )}
         </div>
 
+        {/* Gemini 2.5 Flash BDO Summary Card */}
+        {advisory?.bdo_summary && (
+          <div className="bg-purple-950/90 text-purple-100 p-3 rounded-lg border border-purple-700/60 shadow-sm flex flex-col gap-1.5 font-sans">
+            <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-purple-300">
+              <span className="flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-purple-400" />
+                BDO EXECUTIVE ACTION SUMMARY
+              </span>
+              <span className="bg-purple-800 text-purple-200 text-[9px] px-1.5 py-0.5 rounded">
+                GEMINI 2.5 FLASH
+              </span>
+            </div>
+            <p className="text-xs font-medium leading-relaxed text-purple-100">
+              {advisory.bdo_summary}
+            </p>
+          </div>
+        )}
+
         {/* Feature Phone Mockup */}
         <FeaturePhoneMockup
-          smsContent={village.smsBengali}
+          smsContent={advisory?.sms_bengali || village.smsBengali}
+          bdoSummary={advisory?.bdo_summary}
           recipientPhone={activePhone}
           locationName={`${village.name}`}
+          isLoading={isLoadingAdvisory}
         />
 
         {/* ElevenLabs Audio Prompt Widget */}
