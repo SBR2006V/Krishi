@@ -4,20 +4,20 @@ import EmergencyLedger from './components/EmergencyLedger';
 import MapViewer from './components/MapViewer';
 import DispatchPanel from './components/DispatchPanel';
 import { MOCK_VILLAGES } from './data/villages';
-import type { VillageData, TelemetryData, GeoJsonFeatureCollection } from './types/disaster';
+import type { VillageData, GeoJsonFeatureCollection } from './types/disaster';
 
 export const App: React.FC = () => {
+  // Live Telemetry Header State
+  const [upstreamRain, setUpstreamRain] = useState<number>(78.4);
+  const [dangerGaugesCount, setDangerGaugesCount] = useState<number>(2);
+  const [surgeRisk, setSurgeRisk] = useState<string>('HIGH_SURGE_RISK');
+
+  // Village & GeoJSON State
   const [villages, setVillages] = useState<VillageData[]>(MOCK_VILLAGES);
   const [selectedVillage, setSelectedVillage] = useState<VillageData>(MOCK_VILLAGES[2]);
   const [geoJsonData, setGeoJsonData] = useState<GeoJsonFeatureCollection | null>(null);
 
-  const [telemetry, setTelemetry] = useState<TelemetryData>({
-    upstream_rain_24h_mm: 78.4,
-    upstream_rain_48h_mm: 124.2,
-    catchment_status: 'HIGH_SURGE_RISK',
-    critical_gauges: [],
-  });
-
+  // Layout Panel Toggles
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState<boolean>(true);
   const [isRightPanelOpen, setIsRightPanelOpen] = useState<boolean>(true);
 
@@ -48,16 +48,23 @@ export const App: React.FC = () => {
     setSelectedVillage(safeVillage);
   };
 
-  // Fetch Live Environmental Telemetry (Open-Meteo & CWC Gauges)
+  // Fetch Live Environmental Telemetry from FastAPI (/api/v1/telemetry/live)
   useEffect(() => {
     const fetchTelemetry = async () => {
       try {
         const res = await fetch('http://localhost:8000/api/v1/telemetry/live');
         if (!res.ok) throw new Error('Backend telemetry endpoint unreachable');
-        const data: TelemetryData = await res.json();
-        setTelemetry(data);
+        const data = await res.json();
+        
+        const rain = data.upstream_dvc_rain_mm ?? data.upstream_rain_24h_mm ?? 78.4;
+        const dangerCount = data.cwc_danger_gauges_count ?? (data.critical_gauges ? data.critical_gauges.length : 2);
+        const risk = data.risk_status ?? data.catchment_status ?? 'HIGH_SURGE_RISK';
+
+        setUpstreamRain(rain);
+        setDangerGaugesCount(dangerCount);
+        setSurgeRisk(risk);
       } catch (err) {
-        console.warn('Backend server offline. Using local public fallback for telemetry.', err);
+        console.warn('Backend server offline. Falling back to local river_gauges.json telemetry data.', err);
         try {
           const fallbackRes = await fetch('/river_gauges.json');
           if (fallbackRes.ok) {
@@ -65,12 +72,9 @@ export const App: React.FC = () => {
             const criticals = Array.isArray(gauges)
               ? gauges.filter((g: any) => g.current_water_level_m >= g.danger_level_m)
               : [];
-            setTelemetry({
-              upstream_rain_24h_mm: 78.4,
-              upstream_rain_48h_mm: 124.2,
-              catchment_status: 'HIGH_SURGE_RISK',
-              critical_gauges: criticals,
-            });
+            setUpstreamRain(78.4);
+            setDangerGaugesCount(criticals.length);
+            setSurgeRisk(criticals.length > 0 ? 'HIGH_SURGE_RISK' : 'NORMAL');
           }
         } catch (fallbackErr) {
           console.error('Fallback telemetry load error:', fallbackErr);
@@ -81,7 +85,7 @@ export const App: React.FC = () => {
     fetchTelemetry();
   }, []);
 
-  // Fetch Active Inundation GeoJSON FeatureCollection
+  // Fetch Active Inundation GeoJSON FeatureCollection from FastAPI (/api/v1/maps/active-inundation)
   useEffect(() => {
     const fetchGeoJsonMap = async () => {
       try {
@@ -113,6 +117,12 @@ export const App: React.FC = () => {
             };
           });
           setVillages(extractedVillages);
+          if (extractedVillages.length > 0) {
+            setSelectedVillage((prev) => {
+              const matched = extractedVillages.find((v) => v.id === prev?.id);
+              return matched || extractedVillages[0];
+            });
+          }
         }
       } catch (err) {
         console.warn('Backend map server offline. Fetching local /village_grids.geojson fallback.', err);
@@ -143,6 +153,12 @@ export const App: React.FC = () => {
                 };
               });
               setVillages(extracted);
+              if (extracted.length > 0) {
+                setSelectedVillage((prev) => {
+                  const matched = extracted.find((v) => v.id === prev?.id);
+                  return matched || extracted[0];
+                });
+              }
             }
           }
         } catch (fallbackErr) {
@@ -156,11 +172,11 @@ export const App: React.FC = () => {
 
   return (
     <div className="w-screen h-screen flex flex-col overflow-hidden bg-slate-950 font-sans select-none">
-      {/* Top Header Navbar with Live Telemetry */}
+      {/* Top Header Navbar with Live Dynamic Telemetry */}
       <TopNavbar
-        upstreamRainMm={telemetry.upstream_rain_24h_mm}
-        criticalGaugeCount={telemetry.critical_gauges ? telemetry.critical_gauges.length : 0}
-        catchmentStatus={telemetry.catchment_status}
+        upstreamRainMm={upstreamRain}
+        criticalGaugeCount={dangerGaugesCount}
+        catchmentStatus={surgeRisk}
         onToggleLeftPanel={() => setIsLeftPanelOpen((prev) => !prev)}
         onToggleRightPanel={() => setIsRightPanelOpen((prev) => !prev)}
       />

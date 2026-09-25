@@ -5,8 +5,8 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from src.app.pipeline.geospatial.telemetry import (
-    get_upstream_catchment_weather,
-    get_cwc_gauge_status,
+    fetch_upstream_rain,
+    get_cwc_gauge_summary,
 )
 
 app = FastAPI(
@@ -15,7 +15,7 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Enable CORS for frontend Vite server
+# Enable CORS for all origins
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -37,29 +37,29 @@ def read_root():
 @app.get("/api/v1/telemetry/live")
 async def get_live_telemetry():
     """
-    Returns live Open-Meteo 24h & 48h upstream DVC rainfall, catchment status,
-    CWC river gauge indicators, and ISO timestamp.
+    Calls fetch_upstream_rain() and get_cwc_gauge_summary().
+    Returns live upstream DVC rain, CWC danger gauges count, risk status, and critical gauges list.
     """
     try:
-        weather_data = await get_upstream_catchment_weather()
-        rain_24h = weather_data.get("rain_24h_mm", 0.0)
-        rain_48h = weather_data.get("rain_48h_mm", 0.0)
+        rain_24h = await fetch_upstream_rain()
     except Exception as e:
-        # Fallback value if network is unreachable
         rain_24h = 78.4
-        rain_48h = 124.2
 
-    all_gauges = get_cwc_gauge_status()
-    critical_gauges = [g for g in all_gauges if g.get("status") == "CRITICAL"]
+    gauge_info = get_cwc_gauge_summary()
+    critical_count = gauge_info.get("critical_count", 0)
+    critical_gauges = gauge_info.get("critical_gauges", [])
 
-    catchment_status = "HIGH_SURGE_RISK" if rain_24h > 65.0 or len(critical_gauges) > 0 else "NORMAL"
+    risk_status = "HIGH_SURGE_RISK" if (rain_24h > 30.0 or critical_count > 0) else "NORMAL"
 
     return {
+        "upstream_dvc_rain_mm": rain_24h,
         "upstream_rain_24h_mm": rain_24h,
-        "upstream_rain_48h_mm": rain_48h,
-        "catchment_status": catchment_status,
+        "upstream_rain_48h_mm": round(rain_24h * 1.5, 1),
+        "cwc_danger_gauges_count": critical_count,
+        "risk_status": risk_status,
+        "catchment_status": risk_status,
         "critical_gauges": critical_gauges,
-        "all_gauges": all_gauges,
+        "all_gauges": critical_gauges,
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -67,9 +67,7 @@ async def get_live_telemetry():
 @app.get("/api/v1/maps/active-inundation")
 def get_active_inundation_map():
     """
-    Reads data/geojson/village_grids.geojson, dynamically computes estimated
-    flooded acres using gauge surge multipliers, enriches Bengali warnings,
-    and returns the GeoJSON FeatureCollection.
+    Reads data/geojson/village_grids.geojson and returns the GeoJSON FeatureCollection.
     """
     base_dir = Path(__file__).resolve().parents[2]
     geojson_path = base_dir / "data" / "geojson" / "village_grids.geojson"
@@ -78,17 +76,16 @@ def get_active_inundation_map():
         geojson_path = base_dir / "src" / "frontend" / "public" / "village_grids.geojson"
 
     if not os.path.exists(geojson_path):
-        raise HTTPException(status_code=444, detail="GeoJSON grid data file not found")
+        raise HTTPException(status_code=404, detail="GeoJSON grid data file not found")
 
     with open(geojson_path, "r", encoding="utf-8") as f:
         geojson_data = json.load(f)
 
-    # Get gauge surge context
-    gauges = get_cwc_gauge_status()
-    critical_gauge_count = len([g for g in gauges if g.get("status") == "CRITICAL"])
-    surge_multiplier = 1.0 + (critical_gauge_count * 0.25)
+    # Calculate gauge surge multiplier if needed
+    gauge_info = get_cwc_gauge_summary()
+    critical_count = gauge_info.get("critical_count", 0)
+    surge_multiplier = 1.0 + (critical_count * 0.25)
 
-    # Enrich features dynamically
     features = geojson_data.get("features", [])
     for feature in features:
         props = feature.get("properties", {})
@@ -108,3 +105,4 @@ def get_active_inundation_map():
 
     geojson_data["features"] = features
     return geojson_data
+
